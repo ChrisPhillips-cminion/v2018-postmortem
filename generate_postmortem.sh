@@ -339,7 +339,7 @@ mkdir -p $HELM_RELEASE_DATA
 #------------------------------------------------------------------------------------------------------
 
 #grab version
-helm version > "${HELM_DATA}/helm.version"
+helm version --tls  > "${HELM_DATA}/helm.version"
 
 #initialize variables
 SUBSYS_ANALYTICS=""
@@ -350,7 +350,7 @@ SUBSYS_GATEWAY=""
 SUBSYS_INGRESS=""
 
 if [[ $CP4I -ne 1 ]]; then
-    OUTPUT=`helm ls -a 2>/dev/null`
+    OUTPUT=`helm ls -a  --tls 2>/dev/null`
 
     if [[ ${#OUTPUT} -eq 0 ]]; then
         warning1="WARNING!  Helm is not reporting any deployments, this indicates there is problem communicating with the [tiller] pod."
@@ -370,7 +370,7 @@ if [[ $CP4I -ne 1 ]]; then
                 wait_for_pod $tns $tname
                 sleep 2
 
-                OUTPUT=`helm ls -a 2>/dev/null`
+                OUTPUT=`helm ls -a --tls 2>/dev/null`
 
                 if [[ ${#OUTPUT} -eq 0 ]]; then
                     echo -e "After restarting pod [$tname] in namespace [$tns], Helm is still not reporting any deployments."
@@ -438,15 +438,15 @@ if [[ $CP4I -ne 1 ]]; then
                 fi
             fi
 
-            helm get values --all $release 1>"${HELM_DEPLOYMENT_DATA}/${release}_${chart}-values.out" 2>/dev/null
+            helm get values --all $release --tls 1>"${HELM_DEPLOYMENT_DATA}/${release}_${chart}-values.out" 2>/dev/null
             [ $? -eq 0 ] || rm -f "${HELM_DEPLOYMENT_DATA}/${release}_${chart}-values.out"
 
             #grab history
-            helm history $release --col-width 5000 &> "${HELM_HISTORY_DATA}/${release}_${chart}.out"
+            helm history $release --col-width 5000 --tls &> "${HELM_HISTORY_DATA}/${release}_${chart}.out"
             [ $? -eq 0 ] || rm -f "${HELM_HISTORY_DATA}/${release}_${chart}.out"
 
             #grab release data
-            helm get $release &> "${HELM_RELEASE_DATA}/${release}_${chart}.yaml"
+            helm get $release --tls &> "${HELM_RELEASE_DATA}/${release}_${chart}.yaml"
             [ $? -eq 0 ] || rm -f "${HELM_RELEASE_DATA}/${release}_${chart}.yaml"
         fi
     done <<< "$OUTPUT"
